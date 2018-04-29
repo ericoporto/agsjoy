@@ -254,6 +254,7 @@ void updjoy (Joystick* joy)
          
        case SDL_JOYBUTTONUP:
          theJoy.buttstate[ev.jbutton.button]=ev.jbutton.state;
+         theJoy.buttons = theJoy.buttons & (4294967295-1>>ev.jbutton.button);
          
          // printf(" [i] released butt %i \n", ev.jbutton.button);
          
@@ -261,6 +262,7 @@ void updjoy (Joystick* joy)
          
        case SDL_JOYBUTTONDOWN:
          theJoy.buttstate[ev.jbutton.button]=ev.jbutton.state;
+         theJoy.buttons = theJoy.buttons | (1>>ev.jbutton.button);
          
          // printf(" [i] pressed butt %i \n", ev.jbutton.button);
          
@@ -320,6 +322,27 @@ const char* Joystick_GetName (Joystick* joy)
 
 void AGS_EngineStartup(IAGSEngine *lpEngine)
 {
+
+/*
+    expected entry points from AGS in ags/Engine/plugin/global_plugin.cpp
+
+    ccAddExternalStaticFunction("JoystickCount",                Sc_PluginStub_Int0);
+    ccAddExternalStaticFunction("JoystickName",                 Sc_PluginStub_Int0);
+    ccAddExternalStaticFunction("JoystickRescan",               Sc_PluginStub_Int0);
+    ccAddExternalStaticFunction("Joystick::Open^1",             Sc_PluginStub_Int0);
+    ccAddExternalStaticFunction("Joystick::IsOpen^1",           Sc_PluginStub_Int0);
+    ccAddExternalStaticFunction("Joystick::Click^1",            Sc_PluginStub_Void);
+    ccAddExternalStaticFunction("Joystick::Close^0",            Sc_PluginStub_Void);
+    ccAddExternalStaticFunction("Joystick::Valid^0",            Sc_PluginStub_Int0);
+    ccAddExternalStaticFunction("Joystick::Unplugged^0",        Sc_PluginStub_Int0);
+    ccAddExternalStaticFunction("Joystick::GetName^0",          Sc_PluginStub_Int0);
+    ccAddExternalStaticFunction("Joystick::GetAxis^1",          Sc_PluginStub_Int0);
+    ccAddExternalStaticFunction("Joystick::IsButtonDown^1",     Sc_PluginStub_Int0);
+    ccAddExternalStaticFunction("Joystick::IsJoyBtnDown^1",     Sc_PluginStub_Int0);
+    ccAddExternalStaticFunction("Joystick::Update^0",           Sc_PluginStub_Void);
+    ccAddExternalStaticFunction("Joystick::DisableEvents^0",    Sc_PluginStub_Void);
+    ccAddExternalStaticFunction("Joystick::EnableEvents^1",     Sc_PluginStub_Void);
+*/
   
   engine = lpEngine;
   
