@@ -1,0 +1,384 @@
+#include <stdio.h>
+
+#define THIS_IS_THE_PLUGIN
+#define LINUX_VERSION
+#include "agsplugin.h"
+// #include <allegro5/allegro.h>
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_joystick.h>
+
+/*
+struct Joystick
+{
+  // Exposed: <<<DO NOT CHANGE THE ORDER!!!>>>
+  long id;
+  long button_count;
+  long axes_count;
+  long x, y, z, u, v, w;
+  long pov;
+  unsigned long buttons;
+        
+  // Internal:
+  // int events;
+  // JoyState *state;
+  
+  int buttstate[32];
+  int axes[16];
+
+};
+*/
+struct Joystick
+{
+  // Exposed: <<<DO NOT CHANGE THE ORDER!!!>>>
+  int32 id;
+  int32 button_count;
+  int32 axes_count;
+  int32 x, y, z, u, v, w;
+  int32 pov;
+  unsigned int32 buttons;
+        
+  // Internal:
+  // int events;
+  // JoyState *state;
+  
+  int buttstate[32];
+  int axes[16];
+
+};
+
+// ags crap
+
+IAGSEngine* engine;
+
+char const* joystructname = "joystick";
+
+int32 dummydata = 0;
+
+class joyinterface : public IAGSScriptManagedObject {
+public:
+  // when a ref count reaches 0, this is called with the address
+  // of the object. Return 1 to remove the object from memory, 0 to
+  // leave it
+  virtual int Dispose(const char *address, bool force);
+  // return the type name of the object
+  virtual const char *GetType();
+  // serialize the object into BUFFER (which is BUFSIZE bytes)
+  // return number of bytes used
+  virtual int Serialize(const char *address, char *buffer, int bufsize);
+};
+
+class joyreader : public IAGSManagedObjectReader {
+public:
+  virtual void Unserialize(int key, const char *serializedData, int dataSize);
+};
+
+int joyinterface::Dispose(const char *address, bool force)
+{
+  // delete shit maybe
+  // delete ((Joystick*) address);
+  return 0; //1;
+}
+
+const char* joyinterface::GetType()
+{
+  return joystructname;
+}
+
+int joyinterface::Serialize(const char *address, char *buffer, int bufsize)
+{
+  // put 1 byte there
+  memcpy(buffer, &dummydata, sizeof(dummydata));
+  return sizeof(dummydata);
+}
+
+joyinterface joyintf;
+joyreader joyread;
+Joystick theJoy;
+
+void joyreader::Unserialize(int key, const char *serializedData, int dataSize)
+{
+  // actually do shit 
+    
+  engine->RegisterUnserializedObject(key, &theJoy, &joyintf);
+}
+
+
+
+//
+
+
+
+int MaxJoysticks = 0;
+int ControllerIndex = 0;
+int openedthejoy = 0;
+
+Joystick dummyJoy;
+SDL_Joystick* sdljoy;
+
+int JoystickCount ()
+{  
+  //printf(" [i] joystick count \n");
+  // printf ("  [i] joystick count %i \n", SDL_NumJoysticks(), "! \n");
+  
+  return SDL_NumJoysticks();
+  //return 1;
+  
+  //return 0;
+}
+
+void JoystickRescan()
+{
+  
+  // printf(" [i] joystick rescan \n");
+}
+
+Joystick* Joystick_Open(int joy_num)
+{
+  // printf(" [i] joystick open %i \n", joy_num);
+  
+  Joystick* joy;
+  int ax;
+  int b;
+  
+  if (joy_num == -1) 
+  {
+    // dummyJoy = new Joystick;
+    // return dummyJoy;
+    joy = &dummyJoy;
+  }
+  else
+  { 
+    if (openedthejoy == 0)
+    {
+      sdljoy = SDL_JoystickOpen(0);
+      openedthejoy=1;
+    }
+
+    theJoy.button_count = //11;//11;
+    SDL_JoystickNumButtons(sdljoy);
+    
+    // printf(" butts %i \n", theJoy.button_count);
+    theJoy.axes_count = //5;//1048576;//5; 
+    SDL_JoystickNumAxes(sdljoy);
+    
+    // printf(" axes %i \n", theJoy.axes_count);
+    
+    for (ax=0; ax<16; ax = ax +1)
+      {
+        theJoy.axes[ax] = 0;
+      }
+      
+    for (b=0; b<32; b = b + 1)
+    {
+      theJoy.buttstate[b] = SDL_RELEASED;
+    }
+    
+    int MAXINT = 0;//131072;
+    
+    theJoy.id=MAXINT;
+    
+    theJoy.x=MAXINT;
+    theJoy.y=MAXINT;
+    theJoy.z=MAXINT;
+    theJoy.u=MAXINT;
+    theJoy.v=MAXINT;
+    theJoy.w=MAXINT;
+    theJoy.pov=MAXINT;
+    theJoy.buttons=MAXINT;
+    
+    joy=&theJoy;
+  }
+  
+  //if (openedthejoy==0)
+  //{
+    engine->RegisterManagedObject(joy, &joyintf);
+    
+//  }
+  
+  return joy;  
+}
+
+void Joystick_Close (Joystick* joy)
+{
+  // printf("close joystick \n");
+  SDL_JoystickClose(0);
+}
+
+void Joystick_Click (Joystick* joy, int MouseMode)
+{
+  engine->SimulateMouseClick (1);
+}
+
+int Joystick_Valid (Joystick* joy)
+{
+  
+  // printf(" [i] joystick valid \n");
+  
+  return 1;
+}
+
+int Joystick_Unplugged (Joystick* joy)
+{
+  
+  // printf(" [i] joystick unplugged \n");
+  
+  return 0;
+}
+
+void updjoy (Joystick* joy)
+{
+  //printf("what the \n");
+  int ax;
+  int b;
+  
+//  for (b=0; b<32; b = b + 1)
+//  {
+// theJoy.buttstate[b] = SDL_RELEASED;
+//  }
+  
+  SDL_Event ev;
+  
+  while (SDL_PollEvent(&ev)) {
+    
+    // printf("polling ");
+    
+     switch (ev.type) {
+       
+       case SDL_JOYAXISMOTION:
+         theJoy.axes[ev.jaxis.axis]=ev.jaxis.value;
+         
+         // printf(" [i] moved axis %i \n", ev.jaxis.axis);
+         
+         break;
+         
+       case SDL_JOYBUTTONUP:
+         theJoy.buttstate[ev.jbutton.button]=ev.jbutton.state;
+         
+         // printf(" [i] released butt %i \n", ev.jbutton.button);
+         
+         break;
+         
+       case SDL_JOYBUTTONDOWN:
+         theJoy.buttstate[ev.jbutton.button]=ev.jbutton.state;
+         
+         // printf(" [i] pressed butt %i \n", ev.jbutton.button);
+         
+         break;
+         
+       
+     }
+    
+  }
+  
+}
+
+int Joystick_GetAxis (Joystick* joy, int axis)
+{
+   //printf(" [i] joystick getaxis %i \n", axis);
+  updjoy(&theJoy);
+   
+   if (axis>/*16*/joy->axes_count || axis<0) { return 0; }
+   //printf("checking axis %i / %i \n", axis, joy->axes_count);
+
+  //return SDL_JoystickGetAxis(sdljoy, axis);
+  return theJoy.axes[axis];
+}
+
+// thiscall 
+
+int Joystick_IsButtonDown (Joystick* joy, int butt)
+{
+  
+  // printf(" [i] joystick isbuttondown %i \n", butt);
+  updjoy(&theJoy);  
+   
+  if (butt>32 || butt<0) { return 0; }
+  
+  if (theJoy.buttstate[butt]==SDL_PRESSED)
+  {
+    //printf("pressing butts %i \n", butt);
+    // printf("pressing butts %i / %i \n", butt, joy->button_count);
+    return 1;
+  }
+  else
+  {
+    //printf("disappointed at %i \n", butt);
+    return 0;
+  }
+  //return SDL_JoystickGetButton(sdljoy, butt);
+}
+
+const char* Joystick_GetName (Joystick* joy)
+{
+  return SDL_JoystickName(sdljoy);
+}
+
+///
+
+
+
+void AGS_EngineStartup(IAGSEngine *lpEngine)
+{
+  
+  engine = lpEngine;
+  
+  engine->RegisterScriptFunction("JoystickCount", (void*)&JoystickCount);
+  engine->RegisterScriptFunction("JoystickRescan", (void*)&JoystickRescan);
+  engine->RegisterScriptFunction("Joystick::Open", (void*)&Joystick_Open);
+  engine->RegisterScriptFunction("Joystick::Click", (void*)&Joystick_Click);
+  engine->RegisterScriptFunction("Joystick::Valid", (void*)&Joystick_Valid);
+  engine->RegisterScriptFunction("Joystick::Unplugged", (void*)&Joystick_Unplugged);
+  engine->RegisterScriptFunction("Joystick::GetAxis", (void*)&Joystick_GetAxis);
+  engine->RegisterScriptFunction("Joystick::IsButtonDown", (void*)&Joystick_IsButtonDown);
+  engine->RegisterScriptFunction("Joystick::Close", (void*)&Joystick_Close);
+  engine->RegisterScriptFunction("Joystick::GetName", (void*)&Joystick_GetName);  
+
+// gamepad init  
+/*  
+SDL_Init ( SDL_INIT_GAMECONTROLLER );
+
+#define MAX_CONTROLLERS 32
+SDL_GameController *ControllerHandles[MAX_CONTROLLERS];
+
+MaxJoysticks = SDL_NumJoysticks();
+
+for(int JoystickIndex=0; JoystickIndex < MaxJoysticks; ++JoystickIndex)
+{
+    if (!SDL_IsGameController(JoystickIndex))
+    {
+        continue;
+    }
+    if (ControllerIndex >= MAX_CONTROLLERS)
+    {
+        break;
+    }
+    ControllerHandles[ControllerIndex] = SDL_GameControllerOpen(JoystickIndex);
+    ControllerIndex++;
+    }
+*/  
+  engine->AddManagedObjectReader(joystructname, &joyread);
+
+  SDL_Init ( SDL_INIT_JOYSTICK );
+
+}
+
+void AGS_EngineShutdown()
+{
+  
+  SDL_Quit();
+}
+
+int AGS_EngineOnEvent(int event, int data)
+{
+  return 0;
+}
+
+int AGS_EngineDebugHook(const char *scriptName, int lineNum, int reserved)
+{
+  return 0;
+}
+
+void AGS_EngineInitGfx(const char *driverID, void *data)
+{
+}
