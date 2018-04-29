@@ -22,3 +22,7 @@ If you want to make in Ubuntu 16.04:
     make
     
 
+I also started to hack around to get it working on my own game in Linux.
+
+
+[**Go here to grab the latest release**](https://github.com/ericoporto/agsjoy/releases)!
