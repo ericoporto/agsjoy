@@ -266,6 +266,30 @@ void updjoy (Joystick* joy)
          
          break;
          
+       case SDL_JOYHATMOTION:
+         // numbers below were reverse engineered to match joy POV identifiers
+         if(ev.jhat.value == SDL_HAT_CENTERED){
+           theJoy.pov = 0;
+         } else if(ev.jhat.value == SDL_HAT_DOWN){
+           theJoy.pov = 2^6;  
+         } else if(ev.jhat.value == SDL_HAT_LEFT){
+           theJoy.pov = 2^10;  
+         } else if(ev.jhat.value == SDL_HAT_RIGHT){
+           theJoy.pov = 2^0;  
+         } else if(ev.jhat.value == SDL_HAT_UP){
+           theJoy.pov = 2^3;  
+         } else if(ev.jhat.value == SDL_HAT_LEFTDOWN){
+           theJoy.pov = 2^14;
+         } else if(ev.jhat.value == SDL_HAT_RIGHTDOWN){
+           theJoy.pov = 2^4;  
+         } else if(ev.jhat.value == SDL_HAT_LEFTUP){
+           theJoy.pov = 2^11; 
+         } else if(ev.jhat.value == SDL_HAT_RIGHTUP){
+           theJoy.pov = 2^1;  
+         }
+         
+         break;
+         
        
      }
     
