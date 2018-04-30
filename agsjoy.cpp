@@ -155,12 +155,10 @@ Joystick* Joystick_Open(int joy_num)
       openedthejoy=1;
     }
 
-    theJoy.button_count = //11;//11;
-    SDL_JoystickNumButtons(sdljoy);
+    theJoy.button_count = SDL_JoystickNumButtons(sdljoy);
     
     // printf(" butts %i \n", theJoy.button_count);
-    theJoy.axes_count = //5;//1048576;//5; 
-    SDL_JoystickNumAxes(sdljoy);
+    theJoy.axes_count = SDL_JoystickNumAxes(sdljoy);
     
     // printf(" axes %i \n", theJoy.axes_count);
     
@@ -313,7 +311,16 @@ int Joystick_IsButtonDown (Joystick* joy, int butt)
 
 const char* Joystick_GetName (Joystick* joy)
 {
-  return SDL_JoystickName(sdljoy);
+ // return SDL_JoystickName(sdljoy);
+  
+  //printf(" joyname %s \n",SDL_JoystickName(sdljoy));
+  if(openedthejoy==0){
+    return engine->CreateScriptString("disconnected");
+  } else if(SDL_JoystickName(sdljoy) != NULL) {
+    return engine->CreateScriptString(SDL_JoystickName(sdljoy)) ;
+  } else {
+    return engine->CreateScriptString("");
+  }
 }
 
 ///
@@ -355,7 +362,7 @@ void AGS_EngineStartup(IAGSEngine *lpEngine)
   engine->RegisterScriptFunction("Joystick::GetAxis", (void*)&Joystick_GetAxis);
   engine->RegisterScriptFunction("Joystick::IsButtonDown", (void*)&Joystick_IsButtonDown);
   engine->RegisterScriptFunction("Joystick::Close", (void*)&Joystick_Close);
-  engine->RegisterScriptFunction("Joystick::GetName", (void*)&Joystick_GetName);  
+  engine->RegisterScriptFunction("Joystick::GetName^0", reinterpret_cast<void *>(Joystick_GetName));  
 
 // gamepad init  
 /*  
