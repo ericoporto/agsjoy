@@ -1,3 +1,0 @@
-#!/bin/bash
-g++ -lSDL2 -shared -o libagsjoy.so -fPIC  agsjoy.cpp 
-g++ -lSDL2 -shared -o libagsjoy32.so -fPIC -m32 agsjoy.cpp 

@@ -7,11 +7,7 @@ This code  uses SDL2 and it makes your game depend on SDL2.
 
 Install dependencies sdl2, g++, libc6-dev . 
 
-**Attention** right now, the Makefile is not working yet. Use the `build.sh` script in the folder. Tested only in Ubuntu 16.04.
-
-**about 32-bit linux** For now, the solution is to use a 32 bit Ubuntu VM until I can findout how to solve the dependencies for multiarch in Ubuntu 16.04
-
-If you want to build for 32-bit systems and you are on amd64 install, additionally, install libc6-dev-i386, lib32stdc++-5-dev.
+**Attention** right now, the **Makefile is not working yet**. Use the `build.sh` script in the folder. Tested only in Ubuntu 16.04.
 
 If you want to make in Ubuntu 16.04:
 
@@ -22,7 +18,19 @@ If you want to make in Ubuntu 16.04:
     make
     
 
-I also started to hack around to get it working on my own game in Linux.
+It should work with regular ags linux port.
+
+**about 32-bit linux** For now, the solution is to use a 32 bit Ubuntu VM until I can findout how to solve the dependencies for multiarch in Ubuntu 16.04
+
+If you want to build for 32-bit systems and you are on amd64 install, additionally, install libc6-dev-i386, lib32stdc++-5-dev.
 
 
 [**Go here to grab the latest release**](https://github.com/ericoporto/agsjoy/releases)!
+
+## how to build agsjoy for Windows
+
+Extract `Developent.zip` in `C:/` - you should end up with a `C:/Development/` directory. This will give you the dependencies for SDL2.
+
+Install Visual Studio 2017 Community, install the C++ stuff.
+
+Open the `agsjoy.sln` here in Visual Studio 2017. Press build Release, select win32 when building the .dll since the shipped SDL2 is x86. 
