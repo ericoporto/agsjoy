@@ -13,7 +13,7 @@ If you want to make in Ubuntu 16.04:
 
     sudo apt install libsdl2-dev g++ libc6-dev libc6-dev-i386 git make wget
     git clone git@github.com:ericoporto/agsjoy.git
-    cd agsjoy
+    cd agsjoy/agsjoy/
     wget https://raw.githubusercontent.com/adventuregamestudio/ags/v.3.4.1.12/Engine/plugin/agsplugin.h
     make
     
