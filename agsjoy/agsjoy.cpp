@@ -384,6 +384,7 @@ const char* Joystick_GetName(Joystick* joy)
 
 void AGS_EngineStartup(IAGSEngine *lpEngine)
 {
+  Uint32 subsystem_init;
 
 	/*
 	expected entry points from AGS in ags/Engine/plugin/global_plugin.cpp
@@ -444,8 +445,15 @@ void AGS_EngineStartup(IAGSEngine *lpEngine)
 	*/
 	engine->AddManagedObjectReader(joystructname, &joyread);
 
+  subsystem_init = SDL_WasInit(SDL_INIT_EVERYTHING);
+
+  if (subsystem_init != 0) {  
+	  isOtherSDL_PollEvents_Running = true;
+  } else {
+	  isOtherSDL_PollEvents_Running = false;
+  }
+
 	SDL_Init(SDL_INIT_JOYSTICK);
-	isOtherSDL_PollEvents_Running = true;
 	set_joy_event_watch();
 
 }
