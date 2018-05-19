@@ -42,6 +42,11 @@ IAGSEngine* engine; // Engine interface
 
 char const* joystructname = "joystick";
 
+
+//------------------------------------------------------------
+// BEGIN  joystick filter to handle multiple SDL poll event
+//------------------------------------------------------------
+
 //queue just for joystick events
 std::queue<SDL_Event> joyEventQueue; 
 int32 dummydata = 0;
@@ -75,6 +80,11 @@ void set_joy_event_watch() {
     joyEventQueueMutex = SDL_CreateMutex();
     SDL_AddEventWatch(joyEventWatch, nullptr);
 }
+
+//------------------------------------------------------------
+// END  joystick filter to handle multiple SDL poll event
+//------------------------------------------------------------
+
 
 class joyinterface : public IAGSScriptManagedObject {
 public:
@@ -381,6 +391,9 @@ const char* Joystick_GetName(Joystick* joy)
 ///
 
 
+//------------------------------------------------------------
+// Engine stuff
+//------------------------------------------------------------
 
 void AGS_EngineStartup(IAGSEngine *lpEngine)
 {
