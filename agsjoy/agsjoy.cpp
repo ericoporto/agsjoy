@@ -37,8 +37,8 @@ struct Joystick
 };
 
 // ags stuff
-
-IAGSEngine* engine;
+IAGSEditor *editor; // Editor interface
+IAGSEngine* engine; // Engine interface
 
 char const* joystructname = "joystick";
 
@@ -476,4 +476,38 @@ int AGS_EngineDebugHook(const char *scriptName, int lineNum, int reserved)
 
 void AGS_EngineInitGfx(const char *driverID, void *data)
 {
+}
+
+//------------------------------------------------------------
+// Editor stuff
+//------------------------------------------------------------
+
+const char* scriptHeader =
+  "enum ePOV\r\n"
+  "{\r\n"
+  " ePOVCenter = 0,\r\n"
+  " ePOVDown = 64,\r\n"
+  " ePOVLeft = 1024,\r\n"
+  " ePOVRight = 1,\r\n"
+  " ePOVUp = 8,\r\n"
+  " ePOVDownLeft = 16384,\r\n"
+  " ePOVDownRight = 16,\r\n"
+  " ePOVUpLeft = 2048,\r\n"
+  " ePOVUpRight = 2\r\n"
+  "};\r\n"
+  ;
+
+int  AGS_EditorStartup(IAGSEditor* lpEditor)
+{
+  // User has checked the plugin to use it in their game
+
+  // If it's an earlier version than what we need, abort.
+  if (lpEditor->version < 1)
+    return -1;
+
+  editor = lpEditor;
+  editor->RegisterScriptHeader(scriptHeader);
+
+  // Return 0 to indicate success
+  return 0;
 }
