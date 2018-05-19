@@ -47,6 +47,7 @@ Open the `agsjoy.sln` here in Visual Studio 2017. Press build Release, select wi
 
 3. The framework may need to be resigned. To sign the framework, open up a terminal to:
 
+
     /Library/Frameworks/SDL2.framework/
 
 and sign the framework using the command:
