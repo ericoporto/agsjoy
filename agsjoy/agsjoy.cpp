@@ -64,7 +64,8 @@ static int joyEventWatch(void *userdata, SDL_Event *event) {
 }
 
 SDL_Event getJoyEvent() {
-    SDL_Event result = { .type = 0 };  // if 0, means there wasn't an event.
+	SDL_Event result; //  can't result = { .type = 0 } because MSVC dislikes it.
+	result.type = 0;  // if 0, means there wasn't an event.
 
     SDL_LockMutex(joyEventQueueMutex);
     if (!joyEventQueue.empty()) {
