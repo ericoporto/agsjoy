@@ -9,6 +9,7 @@
 #endif
 
 #include <stdio.h>
+#include <queue>          // std::queue
 
 #define THIS_IS_THE_PLUGIN
 #include "agsplugin.h"
@@ -41,7 +42,39 @@ IAGSEngine* engine;
 
 char const* joystructname = "joystick";
 
+//queue just for joystick events
+std::queue<SDL_Event> joyEventQueue; 
 int32 dummydata = 0;
+static SDL_mutex *joyEventQueueMutex = nullptr;
+
+bool isOtherSDL_PollEvents_Running = false;
+ 
+// warning, this function could be called from another thread, so wrap in mutexes and do very little!!
+static int joyEventWatch(void *userdata, SDL_Event *event) {
+    if (event->type == SDL_JOYAXISMOTION || event->type == SDL_JOYBUTTONUP || event->type == SDL_JOYBUTTONDOWN || event->type == SDL_JOYHATMOTION ) {
+        SDL_LockMutex(joyEventQueueMutex);
+        joyEventQueue.push(*event);
+        SDL_UnlockMutex(joyEventQueueMutex);
+     }
+}
+
+SDL_Event getJoyEvent() {
+    SDL_Event result = { .type = 0 };  // if 0, means there wasn't an event.
+
+    SDL_LockMutex(joyEventQueueMutex);
+    if (!joyEventQueue.empty()) {
+        result = joyEventQueue.front();
+        joyEventQueue.pop();
+    }
+    SDL_UnlockMutex(joyEventQueueMutex);
+    
+    return result;
+}
+
+void set_joy_event_watch() {
+    joyEventQueueMutex = SDL_CreateMutex();
+    SDL_AddEventWatch(joyEventWatch, nullptr);
+}
 
 class joyinterface : public IAGSScriptManagedObject {
 public:
@@ -81,11 +114,11 @@ int joyinterface::Serialize(const char *address, char *buffer, int bufsize)
 
 joyinterface joyintf;
 joyreader joyread;
-Joystick theJoy;
+Joystick joyInAGS;
 
 void joyreader::Unserialize(int key, const char *serializedData, int dataSize)
 {
-	engine->RegisterUnserializedObject(key, &theJoy, &joyintf);
+	engine->RegisterUnserializedObject(key, &joyInAGS, &joyintf);
 }
 
 
@@ -136,37 +169,37 @@ Joystick* Joystick_Open(int joy_num)
 			openedthejoy = 1;
 		}
 
-		theJoy.button_count = SDL_JoystickNumButtons(sdljoy);
+		joyInAGS.button_count = SDL_JoystickNumButtons(sdljoy);
 
-		// printf(" butts %i \n", theJoy.button_count);
-		theJoy.axes_count = SDL_JoystickNumAxes(sdljoy);
+		// printf(" butts %i \n", joyInAGS.button_count);
+		joyInAGS.axes_count = SDL_JoystickNumAxes(sdljoy);
 
-		// printf(" axes %i \n", theJoy.axes_count);
+		// printf(" axes %i \n", joyInAGS.axes_count);
 
 		for (ax = 0; ax<16; ax = ax + 1)
 		{
-			theJoy.axes[ax] = 0;
+			joyInAGS.axes[ax] = 0;
 		}
 
 		for (b = 0; b<32; b = b + 1)
 		{
-			theJoy.buttstate[b] = SDL_RELEASED;
+			joyInAGS.buttstate[b] = SDL_RELEASED;
 		}
 
 		int AMAXINT = 0;//131072;
 
-		theJoy.id = AMAXINT;
+		joyInAGS.id = AMAXINT;
 
-		theJoy.x = AMAXINT;
-		theJoy.y = AMAXINT;
-		theJoy.z = AMAXINT;
-		theJoy.u = AMAXINT;
-		theJoy.v = AMAXINT;
-		theJoy.w = AMAXINT;
-		theJoy.pov = AMAXINT;
-		theJoy.buttons = AMAXINT;
+		joyInAGS.x = AMAXINT;
+		joyInAGS.y = AMAXINT;
+		joyInAGS.z = AMAXINT;
+		joyInAGS.u = AMAXINT;
+		joyInAGS.v = AMAXINT;
+		joyInAGS.w = AMAXINT;
+		joyInAGS.pov = AMAXINT;
+		joyInAGS.buttons = AMAXINT;
 
-		joy = &theJoy;
+		joy = &joyInAGS;
 	}
 
 	//if (openedthejoy==0)
@@ -213,35 +246,41 @@ void updjoy(Joystick* joy)
 
 	//  for (b=0; b<32; b = b + 1)
 	//  {
-	// theJoy.buttstate[b] = SDL_RELEASED;
+	// joyInAGS.buttstate[b] = SDL_RELEASED;
 	//  }
 
 	SDL_Event ev;
+	
+	if(!isOtherSDL_PollEvents_Running){
+		while (SDL_PollEvent(&ev));
+	}
+	
+	ev = getJoyEvent();
 
-	while (SDL_PollEvent(&ev)) {
+	while (ev.type != 0) {
 
 		// printf("polling ");
 
 		switch (ev.type) {
 
 		case SDL_JOYAXISMOTION:
-			theJoy.axes[ev.jaxis.axis] = ev.jaxis.value;
+			joyInAGS.axes[ev.jaxis.axis] = ev.jaxis.value;
 
 			// printf(" [i] moved axis %i \n", ev.jaxis.axis);
 
 			break;
 
 		case SDL_JOYBUTTONUP:
-			theJoy.buttstate[ev.jbutton.button] = ev.jbutton.state;
-			theJoy.buttons = theJoy.buttons & (4294967295 - 1 >> ev.jbutton.button);
+			joyInAGS.buttstate[ev.jbutton.button] = ev.jbutton.state;
+			joyInAGS.buttons = joyInAGS.buttons & (4294967295 - 1 >> ev.jbutton.button);
 
 			// printf(" [i] released butt %i \n", ev.jbutton.button);
 
 			break;
 
 		case SDL_JOYBUTTONDOWN:
-			theJoy.buttstate[ev.jbutton.button] = ev.jbutton.state;
-			theJoy.buttons = theJoy.buttons | (1 >> ev.jbutton.button);
+			joyInAGS.buttstate[ev.jbutton.button] = ev.jbutton.state;
+			joyInAGS.buttons = joyInAGS.buttons | (1 >> ev.jbutton.button);
 
 			// printf(" [i] pressed butt %i \n", ev.jbutton.button);
 
@@ -250,31 +289,31 @@ void updjoy(Joystick* joy)
 		case SDL_JOYHATMOTION:
 			// numbers below were reverse engineered to match joy POV identifiers
 			if (ev.jhat.value == SDL_HAT_CENTERED) {
-				theJoy.pov = 0;
+				joyInAGS.pov = 0;
 			}
 			else if (ev.jhat.value == SDL_HAT_DOWN) {
-				theJoy.pov = 2 ^ 6;
+				joyInAGS.pov = 2 ^ 6;
 			}
 			else if (ev.jhat.value == SDL_HAT_LEFT) {
-				theJoy.pov = 2 ^ 10;
+				joyInAGS.pov = 2 ^ 10;
 			}
 			else if (ev.jhat.value == SDL_HAT_RIGHT) {
-				theJoy.pov = 2 ^ 0;
+				joyInAGS.pov = 2 ^ 0;
 			}
 			else if (ev.jhat.value == SDL_HAT_UP) {
-				theJoy.pov = 2 ^ 3;
+				joyInAGS.pov = 2 ^ 3;
 			}
 			else if (ev.jhat.value == SDL_HAT_LEFTDOWN) {
-				theJoy.pov = 2 ^ 14;
+				joyInAGS.pov = 2 ^ 14;
 			}
 			else if (ev.jhat.value == SDL_HAT_RIGHTDOWN) {
-				theJoy.pov = 2 ^ 4;
+				joyInAGS.pov = 2 ^ 4;
 			}
 			else if (ev.jhat.value == SDL_HAT_LEFTUP) {
-				theJoy.pov = 2 ^ 11;
+				joyInAGS.pov = 2 ^ 11;
 			}
 			else if (ev.jhat.value == SDL_HAT_RIGHTUP) {
-				theJoy.pov = 2 ^ 1;
+				joyInAGS.pov = 2 ^ 1;
 			}
 
 			break;
@@ -282,6 +321,7 @@ void updjoy(Joystick* joy)
 
 		}
 
+		ev = getJoyEvent();
 	}
 
 }
@@ -289,13 +329,13 @@ void updjoy(Joystick* joy)
 int Joystick_GetAxis(Joystick* joy, int axis)
 {
 	//printf(" [i] joystick getaxis %i \n", axis);
-	updjoy(&theJoy);
+	updjoy(&joyInAGS);
 
 	if (axis>/*16*/joy->axes_count || axis<0) { return 0; }
 	//printf("checking axis %i / %i \n", axis, joy->axes_count);
 
 	//return SDL_JoystickGetAxis(sdljoy, axis);
-	return theJoy.axes[axis];
+	return joyInAGS.axes[axis];
 }
 
 // thiscall 
@@ -304,11 +344,11 @@ int Joystick_IsButtonDown(Joystick* joy, int butt)
 {
 
 	// printf(" [i] joystick isbuttondown %i \n", butt);
-	updjoy(&theJoy);
+	updjoy(&joyInAGS);
 
 	if (butt>32 || butt<0) { return 0; }
 
-	if (theJoy.buttstate[butt] == SDL_PRESSED)
+	if (joyInAGS.buttstate[butt] == SDL_PRESSED)
 	{
 		//printf("pressing butts %i \n", butt);
 		// printf("pressing butts %i / %i \n", butt, joy->button_count);
@@ -344,6 +384,7 @@ const char* Joystick_GetName(Joystick* joy)
 
 void AGS_EngineStartup(IAGSEngine *lpEngine)
 {
+  Uint32 subsystem_init;
 
 	/*
 	expected entry points from AGS in ags/Engine/plugin/global_plugin.cpp
@@ -404,7 +445,16 @@ void AGS_EngineStartup(IAGSEngine *lpEngine)
 	*/
 	engine->AddManagedObjectReader(joystructname, &joyread);
 
+  subsystem_init = SDL_WasInit(SDL_INIT_EVERYTHING);
+
+  if (subsystem_init != 0) {  
+	  isOtherSDL_PollEvents_Running = true;
+  } else {
+	  isOtherSDL_PollEvents_Running = false;
+  }
+
 	SDL_Init(SDL_INIT_JOYSTICK);
+	set_joy_event_watch();
 
 }
 
