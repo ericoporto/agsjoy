@@ -492,9 +492,32 @@ void AGS_EngineInitGfx(const char *driverID, void *data)
 {
 }
 
+
+const char* AGS_GetPluginName(void)
+{
+  // Return the plugin description
+  return "agsjoy";
+}
+
 //------------------------------------------------------------
 // Editor stuff
 //------------------------------------------------------------
+
+void AGS_EditorLoadGame(char *buffer, int bufsize)
+{
+    // Nothing to load for this plugin
+}
+
+void AGS_EditorProperties(HWND parent)
+{
+    // Nothing here, but could show up a message box
+}
+
+int AGS_EditorSaveGame(char *buffer, int bufsize)
+{
+    // We don't want to save any persistent data
+    return 0;
+}
 
 const char* scriptHeader =
   "enum ePOV\r\n"
@@ -525,3 +548,11 @@ int  AGS_EditorStartup(IAGSEditor* lpEditor)
   // Return 0 to indicate success
   return 0;
 }
+
+void AGS_EditorShutdown()
+{
+    // User has un-checked the plugin, unregister the header!
+    if (scriptHeader != nullptr) editor->UnregisterScriptHeader(scriptHeader);
+}
+
+
