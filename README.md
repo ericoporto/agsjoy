@@ -34,3 +34,30 @@ Extract `Developent.zip` in `C:/` - you should end up with a `C:/Development/` d
 Install Visual Studio 2017 Community, install the C++ stuff.
 
 Open the `agsjoy.sln` here in Visual Studio 2017. Press build Release, select win32 when building the .dll since the shipped SDL2 is x86. 
+
+
+## how to build agsjoy for MAC OSX
+
+### you need to get SDL2 first
+[more information here...](http://lazyfoo.net/tutorials/SDL/01_hello_SDL/mac/index.php)
+
+1. Download the OS X development libraries from the [SDL website](https://www.libsdl.org/download-2.0.php#source), go into Development Libraries-> Mac OS X-> SDL2-2.0.**X**.dmg . 
+
+2. Next open the dmg and copy the SDL2.framework to /Library/Frameworks. To go directly to a path in finder, press command+shift+g.
+
+3. The framework may need to be resigned. To sign the framework, open up a terminal to:
+
+    /Library/Frameworks/SDL2.framework/
+
+and sign the framework using the command:
+
+    codesign -f -s - SDL2
+
+### building a .dylib
+
+In the same folder as agsjoy.cpp .
+
+    clang++ agsjoy.cpp -Wall -framework SDL2 -F /Library/Frameworks/ -dynamiclib -o libagsjoy.dylib
+
+Now you can use it in your project.
+
