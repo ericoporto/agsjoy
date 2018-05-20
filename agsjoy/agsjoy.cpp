@@ -490,18 +490,19 @@ int AGS_EngineDebugHook(const char *scriptName, int lineNum, int reserved)
 
 void AGS_EngineInitGfx(const char *driverID, void *data)
 {
+
 }
 
+
+//------------------------------------------------------------
+// Editor stuff
+//------------------------------------------------------------
 
 const char* AGS_GetPluginName(void)
 {
   // Return the plugin description
   return "agsjoy";
 }
-
-//------------------------------------------------------------
-// Editor stuff
-//------------------------------------------------------------
 
 void AGS_EditorLoadGame(char *buffer, int bufsize)
 {
