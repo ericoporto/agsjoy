@@ -3,6 +3,8 @@ Joystick for Adventure Game Studio Engine in Linux. *libagsjoy written by qptain
 
 I saw this plugin used in Linux version of Until I Have You, Dualnames told me to ask qptain Nemo for source. He sent me the source and told me I could share and stamp a MIT license on it, so here it is.
 
+**Note:** [Wyz has opensourced his plugin](https://github.com/FTPlus/agsjoy). So once I can get SDL port feature complete regarding the engine, I plan to upstream to his so we can get his work on the Editor side, and hopefully a portable plugin that is better.
+
 This code  uses SDL2 and it makes your game depend on SDL2.
 
 Install dependencies sdl2, g++, libc6-dev . 
