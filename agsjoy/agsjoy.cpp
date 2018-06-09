@@ -283,7 +283,7 @@ void updjoy(Joystick* joy)
 
 		case SDL_JOYBUTTONUP:
 			joyInAGS.buttstate[ev.jbutton.button] = ev.jbutton.state;
-			joyInAGS.buttons = joyInAGS.buttons & (4294967295 - 1 >> ev.jbutton.button);
+			joyInAGS.buttons = joyInAGS.buttons & (4294967295 - (1 << ev.jbutton.button));
 
 			// printf(" [i] released butt %i \n", ev.jbutton.button);
 
@@ -291,7 +291,7 @@ void updjoy(Joystick* joy)
 
 		case SDL_JOYBUTTONDOWN:
 			joyInAGS.buttstate[ev.jbutton.button] = ev.jbutton.state;
-			joyInAGS.buttons = joyInAGS.buttons | (1 >> ev.jbutton.button);
+			joyInAGS.buttons = joyInAGS.buttons | (1 << ev.jbutton.button);
 
 			// printf(" [i] pressed butt %i \n", ev.jbutton.button);
 
