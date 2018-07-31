@@ -1,0 +1,14 @@
+language: cpp
+compiler:
+  - gcc
+addons:
+  apt:
+    packages:
+    - libsdl2-dev 
+    - libc6-dev 
+    - libc6-dev-i386
+script:
+- pushd agsjoy/agsjoy/
+- wget https://raw.githubusercontent.com/adventuregamestudio/ags/v.3.4.1.12/Engine/plugin/agsplugin.h
+- make
+- popd
