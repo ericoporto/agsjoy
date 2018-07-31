@@ -15,7 +15,7 @@ addons:
     - libc6-dev-i386
 
 install: |
-  if [ "$TRAVIS_OS_NAME" == "osx" ]]; then
+  if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       pushd ~
       curl -O https://www.libsdl.org/release/SDL2-2.0.8.dmg
       hdiutil attach SDL2-2.0.8.dmg
