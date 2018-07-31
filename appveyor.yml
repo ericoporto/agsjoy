@@ -29,4 +29,13 @@ artifacts:
 - path: $(configuration)\agsjoy.dll
   name: agsjoy.dll
 
-deploy: off
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: 0FI9i4tjFfPJYT2ModUijy23Pe3iYp6bizTQR5A4b7uUUwTu7YrniPtcq7JljWG/
+  artifact: agsjoy.dll
+  draft: false
+  prerelease: false
+  on:
+    branch: master                 # release from master branch only
+    appveyor_repo_tag: true        # deploy on tag push only
