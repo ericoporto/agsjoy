@@ -1,4 +1,7 @@
 # agsjoy (reverse engineered edition)
+
+[![Build Status](https://travis-ci.org/ericoporto/agsjoy.svg?branch=master)](https://travis-ci.org/ericoporto/agsjoy)
+
 Joystick for Adventure Game Studio Engine in Linux. *libagsjoy written by qptain_Nemo, for Linux, compatible with Wyz agsjoy*.
 
 I saw this plugin used in Linux version of Until I Have You, Dualnames told me to ask qptain Nemo for source. He sent me the source and told me I could share and stamp a MIT license on it, so here it is.
