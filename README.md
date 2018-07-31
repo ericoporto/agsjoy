@@ -1,6 +1,7 @@
 # agsjoy (reverse engineered edition)
 
-[![Build Status](https://travis-ci.org/ericoporto/agsjoy.svg?branch=master)](https://travis-ci.org/ericoporto/agsjoy)
+Linux : [![Build Status](https://travis-ci.org/ericoporto/agsjoy.svg?branch=master)](https://travis-ci.org/ericoporto/agsjoy) | Windows : [![AppVeyor](https://img.shields.io/appveyor/ci/ericoporto/agsjoy.svg)](https://ci.appveyor.com/project/ericoporto/agsjoy)
+
 
 Joystick for Adventure Game Studio Engine in Linux. *libagsjoy written by qptain_Nemo, for Linux, compatible with Wyz agsjoy*.
 
