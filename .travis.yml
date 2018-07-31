@@ -10,5 +10,5 @@ addons:
 script:
 - pushd agsjoy/
 - wget https://raw.githubusercontent.com/adventuregamestudio/ags/v.3.4.1.12/Engine/plugin/agsplugin.h
-- make
+- ./build.sh
 - popd
