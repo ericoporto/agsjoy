@@ -1,19 +1,40 @@
+os:
+  - linux
+  - osx
+
 language: cpp
 compiler:
 - gcc
+- clang
+
 addons:
   apt:
     packages:
     - libsdl2-dev
     - libc6-dev
     - libc6-dev-i386
+
+install: |
+  if [ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      pushd ~
+      curl -O https://www.libsdl.org/release/SDL2-2.0.8.dmg
+      hdiutil attach SDL2-2.0.8.dmg
+      sudo cp -a /Volumes/SDL2/SDL2.framework /Library/Frameworks/
+      pushd /Library/Frameworks/SDL2.framework/
+      codesign -f -s - SDL2
+      popd
+      popd
+  fi
+
 script:
 - pushd agsjoy/
 - wget https://raw.githubusercontent.com/adventuregamestudio/ags/v.3.4.1.12/Engine/plugin/agsplugin.h
-- "./build.sh"
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then clang++ agsjoy.cpp -Wall -framework SDL2 -F /Library/Frameworks/ -dynamiclib -o libagsjoy.dylib   ; fi
+- if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then ./build.sh    ; fi
 - popd
+
 deploy:
-  provider: releases
+- provider: releases
   api_key:
     secure: VVIxBkBVmDDlA/yX1ZVkwl8OLqJlS53RDmWZF5PeQJ1HRzBunYPdlTC46butYqn6yetziWSJjy2FEPAtqzNCyULaoB/EAi0hqSDqDYt7ZuoQAGizOiC2O5E5N9WJmNo3VyF8qJ7sQ56fQEuLt6C+xPuLXcJU2pTlfEsVXFd4c4YUqJBQZyA9ItQoazZ8S/hWS2/NzK27JrKI/iWi2oyLUG7yi5QkpA1Ts7K6/EUnlXqy5qjlOhylIL4RuNK74Hx3Rd1v16V7E/fs5iKoILgWwGxIcOE/y2gTmIhcYAqm5hxrb5nez37lRqNRf9S+AZ7nN3e5WqaEvLj5ie5Oo/OepXF++MB9cn5z/9g62TS4uTnMmvlE0h0mGEi0SYv0hmg7XHxiJ/p+5ed9ON76ba363pun+4wTS12Pjw04ajzykPZKeBZlNtr3Tu4BxMCfdoEqB1segiaxmTYDYU9VPMw1Xk89OYxG0ZxVfkZS1q8NJtiGFrOvFhjGnQkpMtsvk8JII6VreVShYxKdYt3YeGSffH7VUMCz1ZsmEqq2SBJwFYhSEVQlWTSnG1n9ml7AdamTlwMBRlkd/KmFkR4DEGZ6ciGKhEDi/SxAgLJAnzFnsboG49zENM0Gw2Hq1CaWuoxCorGkbo0DMBDKn7aI86CnFL0mNvN7EoLy47hPcEC1Mvc=
   file: agsjoy/libagsjoy.so
@@ -21,3 +42,14 @@ deploy:
     repo: ericoporto/agsjoy
     branch: master
     tags: true
+    condition: $TRAVIS_OS_NAME = linux
+
+- provider: releases
+  api_key:
+    secure: VVIxBkBVmDDlA/yX1ZVkwl8OLqJlS53RDmWZF5PeQJ1HRzBunYPdlTC46butYqn6yetziWSJjy2FEPAtqzNCyULaoB/EAi0hqSDqDYt7ZuoQAGizOiC2O5E5N9WJmNo3VyF8qJ7sQ56fQEuLt6C+xPuLXcJU2pTlfEsVXFd4c4YUqJBQZyA9ItQoazZ8S/hWS2/NzK27JrKI/iWi2oyLUG7yi5QkpA1Ts7K6/EUnlXqy5qjlOhylIL4RuNK74Hx3Rd1v16V7E/fs5iKoILgWwGxIcOE/y2gTmIhcYAqm5hxrb5nez37lRqNRf9S+AZ7nN3e5WqaEvLj5ie5Oo/OepXF++MB9cn5z/9g62TS4uTnMmvlE0h0mGEi0SYv0hmg7XHxiJ/p+5ed9ON76ba363pun+4wTS12Pjw04ajzykPZKeBZlNtr3Tu4BxMCfdoEqB1segiaxmTYDYU9VPMw1Xk89OYxG0ZxVfkZS1q8NJtiGFrOvFhjGnQkpMtsvk8JII6VreVShYxKdYt3YeGSffH7VUMCz1ZsmEqq2SBJwFYhSEVQlWTSnG1n9ml7AdamTlwMBRlkd/KmFkR4DEGZ6ciGKhEDi/SxAgLJAnzFnsboG49zENM0Gw2Hq1CaWuoxCorGkbo0DMBDKn7aI86CnFL0mNvN7EoLy47hPcEC1Mvc=
+  file: agsjoy/libagsjoy.dylib
+  on:
+    repo: ericoporto/agsjoy
+    branch: master
+    tags: true
+    condition: $TRAVIS_OS_NAME = osx
