@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g -O2 -Wall -fPIC -I/usr/include/SDL2 -D_REENTRANT  
+CXXFLAGS = -g -O2 -Wall -fPIC -std=c++11 -I/usr/include/SDL2 -D_REENTRANT  
 LD = g++
 LDFLAGS = -L/usr/lib/x86_64-linux-gnu -lSDL2
 DEFINES = 
