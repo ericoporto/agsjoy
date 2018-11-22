@@ -143,7 +143,10 @@ int ControllerIndex = 0;
 int openedthejoy = 0;
 
 Joystick dummyJoy;
+
+//one day this has to be done in a way with 4 joystick support, right now is only 1
 SDL_Joystick* sdljoy;
+SDL_Haptic* haptic = NULL;
 
 int JoystickCount()
 {
@@ -178,6 +181,26 @@ Joystick* Joystick_Open(int joy_num)
 		{
 			sdljoy = SDL_JoystickOpen(0);
 			openedthejoy = 1;
+
+      // initialize haptics and rumble
+	    haptic = SDL_HapticOpenFromJoystick( sdljoy );
+      if( haptic == NULL ) {
+        printf( "failed to initilize sdl haptics: %s\n", SDL_GetError() );
+      } else {
+        if( SDL_HapticRumbleSupported(haptic) == SDL_FALSE) {
+          printf( "Rumble is not supported on SDL for the current joystick!\n");
+          SDL_HapticClose(haptic);
+          haptic = NULL;
+        } else {
+          if (SDL_HapticRumbleInit(haptic) != 0) {
+            printf( "error when initializing sdl rumble: %s\n", SDL_GetError());
+            SDL_HapticClose(haptic);
+            haptic = NULL;
+          } else {
+            printf( "Joystick/Gamepad rumble succesfully initialized\n" );
+          }
+        }
+      }
 		}
 
 		joyInAGS.button_count = SDL_JoystickNumButtons(sdljoy);
@@ -225,7 +248,32 @@ Joystick* Joystick_Open(int joy_num)
 void Joystick_Close(Joystick* joy)
 {
 	// printf("close joystick \n");
+
+  // close hptics
+  if( haptic ) {
+    SDL_HapticRumbleStop(haptic);
+    SDL_HapticClose( haptic );
+    haptic = NULL;
+  }
+
 	SDL_JoystickClose(0);
+}
+
+void Joystick_Rumble(Joystick* joy, int strength, int length)
+{
+	// printf("open rumble joystick \n");
+
+  //if either strength or length are zero, stop rumbling
+  if(strength>0 && length>0){
+    SDL_HapticRumbleStop(haptic);
+  } else {
+  //else, let's rumble  
+
+    float f_strength = ((float)strength / 65535.0 );
+
+    SDL_HapticRumblePlay(haptic, f_strength, length);
+  }
+
 }
 
 void Joystick_Click(Joystick* joy, int MouseMode)
@@ -432,6 +480,7 @@ void AGS_EngineStartup(IAGSEngine *lpEngine)
 	engine->RegisterScriptFunction("Joystick::GetAxis", (void*)&Joystick_GetAxis);
 	engine->RegisterScriptFunction("Joystick::IsButtonDown", (void*)&Joystick_IsButtonDown);
 	engine->RegisterScriptFunction("Joystick::Close", (void*)&Joystick_Close);
+	engine->RegisterScriptFunction("Joystick::Rumble", (void*)&Joystick_Rumble);
 	engine->RegisterScriptFunction("Joystick::GetName^0", reinterpret_cast<void *>(Joystick_GetName));
 
 	// gamepad init  
@@ -567,6 +616,9 @@ const char* scriptHeader =
 "\r\n"
 "/// Closes controller\r\n"
 "import void Close ();\r\n"
+"\r\n"
+"/// Rumbles controller\r\n"
+"import void Rumble (int strength, int length);\r\n"
 "\r\n"
 "/// Returns whether the controller is valid. (use this when loading save games)\r\n"
 "import bool Valid ();\r\n"
